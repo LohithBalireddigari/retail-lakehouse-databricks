@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - run: pip install -r requirements-dev.txt
+      - run: pytest -q
+      - name: End-to-end smoke run
+        run: |
+          PYTHONPATH=src python -m retail_lakehouse.data_generator --output data/raw --orders 1000
+          PYTHONPATH=src python -m retail_lakehouse.pipeline --local
